@@ -1,12 +1,26 @@
 ---
+- name: Configure MongoDB on Private EC2
+  hosts: database
+  become: yes
+
+  tasks:
+    - name: Ensure MongoDB service is enabled and running
+      service:
+        name: mongod
+        state: started
+        enabled: yes
+
+    - name: Verify MongoDB is listening on port 27017
+      wait_for:
+        port: 27017
+        host: 10.0.2.43
+        timeout: 30
+
 - name: Deploy TravelMemory application
   hosts: web
   become: yes
 
   tasks:
-    - name: Ensure Node.js is installed
-      command: node --version
-
     - name: Ensure Nginx is running
       service:
         name: nginx
