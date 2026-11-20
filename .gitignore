@@ -132,3 +132,4 @@ dist
 
 # Uploaded images
 backend/uploads/
+ansible/inventory.ini
