@@ -1,0 +1,31 @@
+---
+- name: Deploy TravelMemory application
+  hosts: web
+  become: yes
+
+  tasks:
+    - name: Ensure Node.js is installed
+      command: node --version
+
+    - name: Ensure Nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Install backend dependencies
+      npm:
+        path: /home/ubuntu/TravelMemory/backend
+        state: present
+      become_user: ubuntu
+
+    - name: Build React frontend
+      command: npm run build
+      args:
+        chdir: /home/ubuntu/TravelMemory/frontend
+      become_user: ubuntu
+
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
