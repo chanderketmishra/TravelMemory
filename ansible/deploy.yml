@@ -2,7 +2,6 @@
 - name: Configure MongoDB on Private EC2
   hosts: database
   become: yes
-
   tasks:
     - name: Ensure MongoDB service is enabled and running
       service:
@@ -19,7 +18,6 @@
 - name: Deploy TravelMemory application
   hosts: web
   become: yes
-
   tasks:
     - name: Ensure Nginx is running
       service:
@@ -33,10 +31,30 @@
         state: present
       become_user: ubuntu
 
+    - name: Install PM2 globally
+      npm:
+        name: pm2
+        global: yes
+
     - name: Build React frontend
       command: npm run build
       args:
         chdir: /home/ubuntu/TravelMemory/frontend
+      become_user: ubuntu
+
+    - name: Start backend with PM2
+      shell: |
+        if pm2 describe travelmemory-backend >/dev/null 2>&1; then
+          pm2 restart travelmemory-backend
+        else
+          pm2 start index.js --name travelmemory-backend
+        fi
+      args:
+        chdir: /home/ubuntu/TravelMemory/backend
+      become_user: ubuntu
+
+    - name: Save PM2 process list
+      command: pm2 save
       become_user: ubuntu
 
     - name: Restart Nginx
